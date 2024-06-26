@@ -54,7 +54,7 @@ def desenhar_lista(draw_info):
 
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.largura_bloco
-        y = draw_info.height - (val - draw_info.min_val) * \
+        y = - 10 + draw_info.height - (val - draw_info.min_val) * \
             draw_info.altura_bloco
 
         cor = draw_info.GRADIENTS[i % 3]
@@ -90,6 +90,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+            if event.type != pygame.KEYDOWN:
+                continue
+
+            if event.key == pygame.K_r:
+                lst = gerador_lista(n, min_val, max_val)
+                draw_info.set_list(lst=lst)
 
     pygame.quit()
 
