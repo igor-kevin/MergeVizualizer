@@ -102,7 +102,7 @@ def bubble_sort(draw_info, ascending=True):
             if (desordenado[i] < desordenado[j] and ascending) or (desordenado[i] > desordenado[j] and not ascending):
                 desordenado[i], desordenado[j] = desordenado[j], desordenado[i]
                 desenhar_lista(
-                    draw_info, {j: draw_info.GREEN, j+1: draw_info.RED}, True)
+                    draw_info, {j: draw_info.GREEN, i: draw_info.RED}, True)
                 yield True
     # Agora ordenada na verdade
     return desordenado
@@ -126,7 +126,7 @@ def main():
 
     draw_info = DrawInformation(800, 600, lst)
     while run:
-        clock.tick(60)
+        clock.tick(15)
         if sorting:
             try:
                 next(gerador_algoritmo_sort)
