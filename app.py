@@ -1,6 +1,6 @@
 import pygame
 import random
-
+import math
 pygame.init()
 
 
@@ -36,7 +36,7 @@ class DrawInformation:
         self.min_val = min(lst)
 
         self.largura_bloco = round((self.width - self.SIDE_PAD)/len(lst))
-        self.altura_bloco = round(
+        self.altura_bloco = math.floor(
             (self.height - self.TOP_PAD)/(self.max_val-self.min_val))
         self.start_x = self.SIDE_PAD // 2
 
@@ -56,12 +56,19 @@ def desenhar(draw_info):
         "I - Insertion Sort | B - Bubble Sort | M - Mergesort", 1, draw_info.RED)
     draw_info.window.blit(
         algoritmo, (draw_info.width/2 - algoritmo.get_width()/2, 40))
+
     desenhar_lista(draw_info)
+
     pygame.display.update()
 
 
-def desenhar_lista(draw_info):
+def desenhar_lista(draw_info, posicao_cores={}, limpa_bg=False):
     lst = draw_info.lst
+    if limpa_bg:
+        limpa_retangulo = (draw_info.SIDE_PAD//2, draw_info.TOP_PAD, draw_info.width -
+                           draw_info.SIDE_PAD, draw_info.height - draw_info.TOP_PAD)
+        pygame.draw.rect(draw_info.window,
+                         draw_info.BACKGROUND_COLOR, limpa_retangulo)
 
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.largura_bloco
@@ -69,8 +76,14 @@ def desenhar_lista(draw_info):
             draw_info.altura_bloco
 
         cor = draw_info.GRADIENTS[i % 3]
+
+        if i in posicao_cores:
+            cor = posicao_cores[i]
+
         pygame.draw.rect(draw_info.window, cor,
                          (x, y, draw_info.largura_bloco, draw_info.height))
+    if limpa_bg:
+        pygame.display.update()
 
 
 def gerador_lista(n, min_val, max_val):
@@ -80,6 +93,19 @@ def gerador_lista(n, min_val, max_val):
         lst.append(valor)
 
     return lst
+
+
+def bubble_sort(draw_info, ascending=True):
+    desordenado = draw_info.lst
+    for i in range(len(desordenado)):
+        for j in range(len(desordenado)):
+            if (desordenado[i] < desordenado[j] and ascending) or (desordenado[i] > desordenado[j] and not ascending):
+                desordenado[i], desordenado[j] = desordenado[j], desordenado[i]
+                desenhar_lista(
+                    draw_info, {j: draw_info.GREEN, j+1: draw_info.RED}, True)
+                yield True
+    # Agora ordenada na verdade
+    return desordenado
 
 
 def main():
@@ -94,11 +120,20 @@ def main():
 
     lst = gerador_lista(n, min_val, max_val)
 
+    algoritmo_escolhido = bubble_sort
+    nome_algoritmo_escolhido = "Bubble Sort"
+    gerador_algoritmo_sort = None
+
     draw_info = DrawInformation(800, 600, lst)
     while run:
         clock.tick(60)
-
-        desenhar(draw_info=draw_info)
+        if sorting:
+            try:
+                next(gerador_algoritmo_sort)
+            except StopIteration:
+                sorting = False
+        else:
+            desenhar(draw_info)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -112,6 +147,8 @@ def main():
                 draw_info.set_list(lst=lst)
             elif event.key == pygame.K_SPACE and sorting is False:
                 sorting = True
+                gerador_algoritmo_sort = algoritmo_escolhido(
+                    draw_info, ascendente)
             elif event.key == pygame.K_a and not sorting:
                 ascendente = True
             elif event.key == pygame.K_d and not sorting:
