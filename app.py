@@ -17,6 +17,8 @@ class DrawInformation:
         (192, 192, 192)
     ]
 
+    FONT = pygame.font.SysFont('arial', 30)
+    LARGE_FONT = pygame.font.SysFont('arial', 45)
     SIDE_PAD = 100
     TOP_PAD = 150
 
@@ -45,6 +47,15 @@ class DrawInformation:
 
 def desenhar(draw_info):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
+    controles = draw_info.FONT.render(
+        "R - Resetar | SPACE - Começar sort | A - Ascendente | D - Descendente", 1, draw_info.BLACK)
+    draw_info.window.blit(
+        controles, (draw_info.width/2 - controles.get_width()/2, 5))
+
+    algoritmo = draw_info.FONT.render(
+        "I - Insertion Sort | B - Bubble Sort | M - Mergesort", 1, draw_info.RED)
+    draw_info.window.blit(
+        algoritmo, (draw_info.width/2 - algoritmo.get_width()/2, 40))
     desenhar_lista(draw_info)
     pygame.display.update()
 
@@ -78,6 +89,8 @@ def main():
     n = 50
     min_val = 0
     max_val = 100
+    sorting = False
+    ascendente = True
 
     lst = gerador_lista(n, min_val, max_val)
 
@@ -97,6 +110,12 @@ def main():
             if event.key == pygame.K_r:
                 lst = gerador_lista(n, min_val, max_val)
                 draw_info.set_list(lst=lst)
+            elif event.key == pygame.K_SPACE and sorting is False:
+                sorting = True
+            elif event.key == pygame.K_a and not sorting:
+                ascendente = True
+            elif event.key == pygame.K_d and not sorting:
+                ascendente = False
 
     pygame.quit()
 
