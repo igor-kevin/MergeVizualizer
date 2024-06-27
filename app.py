@@ -45,17 +45,23 @@ class DrawInformation:
 # Desenha e manda um update para não ter outros overlays e tal
 
 
-def desenhar(draw_info):
+def desenhar(draw_info, nome_algoritmo, ascendendo):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
+
+    titulo = draw_info.LARGE_FONT.render(
+        f"Atual: {nome_algoritmo} - {'Ascendente' if ascendendo else 'Descendente'}", 1, draw_info.RED)
+    draw_info.window.blit(
+        titulo, (draw_info.width/2 - titulo.get_width()/2, 10))
+
     controles = draw_info.FONT.render(
         "R - Resetar | SPACE - Começar sort | A - Ascendente | D - Descendente", 1, draw_info.BLACK)
     draw_info.window.blit(
-        controles, (draw_info.width/2 - controles.get_width()/2, 5))
+        controles, (draw_info.width/2 - controles.get_width()/2, 48))
 
     algoritmo = draw_info.FONT.render(
-        "I - Insertion Sort | B - Bubble Sort | M - Mergesort", 1, draw_info.RED)
+        "I - Insertion Sort | B - Bubble Sort | M - Mergesort | J - Miracle Sort | , - Random Sort", 1, draw_info.BLACK)
     draw_info.window.blit(
-        algoritmo, (draw_info.width/2 - algoritmo.get_width()/2, 40))
+        algoritmo, (draw_info.width/2 - algoritmo.get_width()/2, 80))
 
     desenhar_lista(draw_info)
 
@@ -95,11 +101,11 @@ def gerador_lista(n, min_val, max_val):
     return lst
 
 
-def bubble_sort(draw_info, ascending=True):
+def bubble_sort(draw_info, ascendendo=True):
     desordenado = draw_info.lst
     for i in range(len(desordenado)):
         for j in range(len(desordenado)):
-            if (desordenado[i] < desordenado[j] and ascending) or (desordenado[i] > desordenado[j] and not ascending):
+            if (desordenado[i] < desordenado[j] and ascendendo) or (desordenado[i] > desordenado[j] and not ascendendo):
                 desordenado[i], desordenado[j] = desordenado[j], desordenado[i]
                 desenhar_lista(
                     draw_info, {j: draw_info.GREEN, i: draw_info.RED}, True)
@@ -108,13 +114,114 @@ def bubble_sort(draw_info, ascending=True):
     return desordenado
 
 
+def insert_sort(draw_info, ascendendo=True):
+    desordenado = draw_info.lst
+    tamanho: int = len(desordenado)
+    comparando: int
+    for proximo in range(1, tamanho):
+        comparando = desordenado[proximo]
+        index_vetor: int = proximo
+
+        # Enquanto estiver dentro do vetor e os valores forem maior do que o atual volta um no index
+        while (index_vetor > 0 and desordenado[index_vetor-1] > comparando and ascendendo) or (index_vetor > 0 and desordenado[index_vetor-1] < comparando and not ascendendo):
+            desordenado[index_vetor] = desordenado[index_vetor-1]
+            index_vetor -= 1
+            desenhar_lista(
+                draw_info, {index_vetor: draw_info.GREEN, proximo: draw_info.RED}, True)
+            yield True
+
+        desordenado[index_vetor] = comparando
+
+
+def merge_sort(draw_info, ascendendo=True):
+    desordenado = draw_info.lst
+    n = len(desordenado)
+    current_size = 1
+
+    while current_size < n:
+        for left_start in range(0, n, 2 * current_size):
+            mid = min(n - 1, left_start + current_size - 1)
+            right_end = min((left_start + 2 * current_size - 1), (n - 1))
+
+            left = desordenado[left_start:mid + 1]
+            right = desordenado[mid + 1:right_end + 1]
+
+            i = j = 0
+            k = left_start
+
+            while i < len(left) and j < len(right):
+                if (left[i] <= right[j] and ascendendo) or (left[i] >= right[j] and not ascendendo):
+                    desordenado[k] = left[i]
+                    desenhar_lista(
+                        draw_info, {k: draw_info.GREEN, left_start + i: draw_info.RED}, True)
+                    i += 1
+                else:
+                    desordenado[k] = right[j]
+                    desenhar_lista(
+                        draw_info, {k: draw_info.GREEN, mid + 1 + j: draw_info.RED}, True)
+                    j += 1
+                k += 1
+                yield True
+
+            while i < len(left):
+                desordenado[k] = left[i]
+                desenhar_lista(
+                    draw_info, {k: draw_info.GREEN, left_start + i: draw_info.RED}, True)
+                i += 1
+                k += 1
+                yield True
+
+            while j < len(right):
+                desordenado[k] = right[j]
+                desenhar_lista(
+                    draw_info, {k: draw_info.GREEN, mid + 1 + j: draw_info.RED}, True)
+                j += 1
+                k += 1
+                yield True
+
+        current_size *= 2
+    return desordenado
+
+
+def miracle_sort(draw_info, asdf,  ascendente=True):
+    lst = draw_info.lst
+    if sorted(lst) != lst:
+        random.shuffle(lst)
+        desenhar_lista(draw_info, {}, True)
+        yield True
+    return lst
+
+
+def is_sorted(arr):
+    """Função auxiliar para verificar se a lista está ordenada"""
+    for i in range(len(arr) - 1):
+        if arr[i] > arr[i + 1]:
+            return False
+    return True
+
+
+def random_sort(draw_info, ascending=True):
+    """Implementação do Random Sort (Bogo Sort) com visualização Pygame"""
+    lst = draw_info.lst
+    while not is_sorted(lst):
+        # Seleciona dois índices aleatórios para troca
+        i, j = random.sample(range(len(lst)), 2)
+        # Troca os elementos
+        lst[i], lst[j] = lst[j], lst[i]
+
+        # Desenha a lista atualizada no Pygame
+        desenhar_lista(draw_info, {i: draw_info.RED, j: draw_info.GREEN}, True)
+
+        yield True
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
 
-    n = 50
-    min_val = 0
-    max_val = 100
+    n = 100
+    min_val = 10
+    max_val = 400
     sorting = False
     ascendente = True
 
@@ -124,16 +231,16 @@ def main():
     nome_algoritmo_escolhido = "Bubble Sort"
     gerador_algoritmo_sort = None
 
-    draw_info = DrawInformation(800, 600, lst)
+    draw_info = DrawInformation(1100, 700, lst)
     while run:
-        clock.tick(15)
+        clock.tick(20)
         if sorting:
             try:
                 next(gerador_algoritmo_sort)
             except StopIteration:
                 sorting = False
         else:
-            desenhar(draw_info)
+            desenhar(draw_info, nome_algoritmo_escolhido, ascendente)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -142,7 +249,7 @@ def main():
             if event.type != pygame.KEYDOWN:
                 continue
 
-            if event.key == pygame.K_r:
+            if event.key == pygame.K_r and not sorting:
                 lst = gerador_lista(n, min_val, max_val)
                 draw_info.set_list(lst=lst)
             elif event.key == pygame.K_SPACE and sorting is False:
@@ -153,6 +260,23 @@ def main():
                 ascendente = True
             elif event.key == pygame.K_d and not sorting:
                 ascendente = False
+            elif event.key == pygame.K_i and not sorting:
+                algoritmo_escolhido = insert_sort
+                nome_algoritmo_escolhido = "Insert Sort"
+            elif event.key == pygame.K_b and not sorting:
+                algoritmo_escolhido = bubble_sort
+                nome_algoritmo_escolhido = "Bubble Sort"
+            elif event.key == pygame.K_m and not sorting:
+                algoritmo_escolhido = merge_sort
+                nome_algoritmo_escolhido = "Merge Sort"
+            elif event.key == pygame.K_j and not sorting:
+                algoritmo_escolhido = miracle_sort
+                nome_algoritmo_escolhido = "Miracle Sort"
+            elif event.key == pygame.K_COMMA and not sorting:
+                algoritmo_escolhido = random_sort
+                nome_algoritmo_escolhido = "Random Sort (aperte Q para sair)"
+            elif event.key == pygame.K_q:
+                pygame.quit()
 
     pygame.quit()
 
