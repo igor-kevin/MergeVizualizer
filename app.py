@@ -233,7 +233,7 @@ def main():
 
     draw_info = DrawInformation(1100, 700, lst)
     while run:
-        clock.tick(20)
+        # clock.tick(20)
         if sorting:
             try:
                 next(gerador_algoritmo_sort)
@@ -253,7 +253,7 @@ def main():
                 lst = gerador_lista(n, min_val, max_val)
                 draw_info.set_list(lst=lst)
             elif event.key == pygame.K_SPACE and sorting is False:
-                sorting = True
+                sorting = True'
                 gerador_algoritmo_sort = algoritmo_escolhido(
                     draw_info, ascendente)
             elif event.key == pygame.K_a and not sorting:
@@ -276,7 +276,7 @@ def main():
                 algoritmo_escolhido = random_sort
                 nome_algoritmo_escolhido = "Random Sort (aperte Q para sair)"
             elif event.key == pygame.K_q:
-                pygame.quit()
+                run = False
 
     pygame.quit()
 
